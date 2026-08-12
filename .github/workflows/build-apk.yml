@@ -16,19 +16,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Unzip project
+        run: |
+          mkdir buildsrc
+          unzip -q *.zip -d buildsrc
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 22
 
       - name: Install dependencies
+        working-directory: buildsrc
         run: npm install
 
       - name: Create Android project
+        working-directory: buildsrc
         run: npx cap add android
 
       - name: Sync app
+        working-directory: buildsrc
         run: npx cap sync android
 
       - name: Setup Java
@@ -38,12 +45,12 @@ jobs:
           java-version: '21'
 
       - name: Build APK
-        working-directory: android
+        working-directory: buildsrc/android
         run: ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Analytics-Pro-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: buildsrc/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
